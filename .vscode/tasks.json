@@ -1,0 +1,106 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "always",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Build",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge build",
+            "group": "build"
+        },
+        {
+            "presentation": {
+                "clear": false,
+                "echo": false,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "never",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Format All",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge fmt",
+        },
+        {
+            "presentation": {
+                "clear": false,
+                "echo": false,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "never",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Format",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge fmt ${relativeFile}"
+        },
+        {
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "always",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Test",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge test --match-path ${relativeFile} -vvv",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "always",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Test All",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge test",
+            "group": "test"
+        },
+        {
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "always",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Test [Gas]",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge test --match-path ${relativeFile} -vvv --gas-report",
+            "group": {
+                "kind": "test"
+            }
+        },
+        {
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "always",
+                "showReuseMessage": false
+            },
+            "label": "Run Forge Test All [Gas]",
+            "type": "shell",
+            "command": "$HOME/.foundry/bin/forge test --gas-report",
+            "group": "test"
+        }
+    ]
+}
