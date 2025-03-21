@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {TWAP, TWAPLib} from "../../source/library/TWAP.sol";
 import {Quote} from "../../source/library/TWAP.sol";

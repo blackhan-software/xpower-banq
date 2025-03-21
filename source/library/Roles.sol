@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 library Roles {
     function SET_TARGET(string memory s) internal pure returns (uint64) {

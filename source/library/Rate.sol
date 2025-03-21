@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {ud, exp} from "@prb/math/src/UD60x18.sol";
 import {IRModel} from "../struct/IRModel.sol";

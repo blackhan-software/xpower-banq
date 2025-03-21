@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {Feed_V1} from "./Feed-v1.0.sol";
 import {Feed_R1} from "./Feed-v1.0.sol";

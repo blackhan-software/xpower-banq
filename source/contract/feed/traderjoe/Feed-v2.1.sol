@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {IPair_V2} from "../../../interface/feed/traderjoe/Pair-v2.1.sol";
 import {IFeed} from "../../../interface/Feed.sol";

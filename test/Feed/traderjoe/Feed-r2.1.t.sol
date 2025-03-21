@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {IFeed} from "../../../source/interface/Feed.sol";
 import {MockFeed_R2, MockPrice} from "./MockFeed-v2.1.sol";

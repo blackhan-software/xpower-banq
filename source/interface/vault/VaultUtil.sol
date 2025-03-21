@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.29;
 
 import {ISupplyPosition} from "../../interface/Position.sol";
 import {IBorrowPosition} from "../../interface/Position.sol";
