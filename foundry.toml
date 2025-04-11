@@ -1,0 +1,11 @@
+# See: https://book.getfoundry.sh/reference/config/overview
+
+[profile.default]
+solc_version = "0.8.28"
+src = "source"
+out = "out"
+libs = ["lib"]
+
+[etherscan]
+avalanche = { key = "${ETHERSCAN_API_KEY}", url = "https://api.snowscan.xyz/api" }
+fuji = { key = "${ETHERSCAN_API_KEY}", url = "https://api-testnet.snowscan.xyz/api" }
