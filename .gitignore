@@ -1,0 +1,30 @@
+# Compiler files
+cache/
+out/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/*/43113/
+/broadcast/*/43114/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+
+# NPM
+node_modules/
+
+# Python venv
+bin/
+include/
+share/
+lib64
+lib/python*
+pyvenv.cfg
+
+# Logs
+*.log
