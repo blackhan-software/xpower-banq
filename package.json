@@ -1,0 +1,34 @@
+{
+  "author": {
+    "email": "development@blackhan.com",
+    "name": "Blackhan Software Ltd",
+    "url": "https://github.com/blackhan-software"
+  },
+  "devDependencies": {
+    "ethers": "^6.13.5",
+    "minimist": "^1.2.8"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.3.0",
+    "@prb/math": "^4.1.0"
+  },
+  "description": "DeFi Lending & Borrowing",
+  "keywords": [
+    "lending",
+    "borrowing",
+    "defi"
+  ],
+  "license": "GPL-3.0",
+  "name": "banq",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blackhan-software/banq.git"
+  },
+  "scripts": {
+    "build": "FOUNDRY_OPTIMIZER=true forge build",
+    "clean": "FOUNDRY_OPTIMIZER=true forge clean",
+    "test": "FOUNDRY_OPTIMIZER=false forge test"
+  },
+  "version": "0.0.0"
+}
