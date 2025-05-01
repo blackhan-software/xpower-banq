@@ -32,4 +32,6 @@ library Constant {
     uint256 internal constant BPS = 1.0e14;
     /** PoW difficulty maximum */
     uint8 internal constant POW = 64;
+    /** protocol version */
+    uint256 public constant VERSION = 0x1a1;
 }

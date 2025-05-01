@@ -23,7 +23,7 @@ library BorrowRate {
     }
 
     /**
-     * Accrues the amount the borrow rate.
+     * Accrues the amount with the borrow rate.
      *
      * @param irm structure
      * @param amount to accrue for
@@ -37,8 +37,7 @@ library BorrowRate {
         uint256 duration,
         uint256 util
     ) internal pure returns (uint256 compounded) {
-        uint256 rate = over(irm, duration, util);
-        return Rate.accrue(amount, rate);
+        return Rate.accrue(amount, over(irm, duration, util));
     }
 
     /**
@@ -54,8 +53,7 @@ library BorrowRate {
         uint256 duration,
         uint256 util
     ) internal pure returns (uint256 borrow_rate) {
-        uint256 rate = by(irm, util);
-        return Rate.over(duration, rate);
+        return Rate.over(duration, by(irm, util));
     }
 
     /**
@@ -93,12 +91,12 @@ library SupplyRate {
     }
 
     /**
-     * Accrues the amount the supply rate.
+     * Accrues the amount with the supply rate.
      *
      * @param irm structure
      * @param amount to accrue for
      * @param duration to accrue over
-     * @param util  to accrue for
+     * @param util to accrue for
      * @return compounded amount
      */
     function accrue(
@@ -107,8 +105,7 @@ library SupplyRate {
         uint256 duration,
         uint256 util
     ) internal pure returns (uint256 compounded) {
-        uint256 rate = over(irm, duration, util);
-        return Rate.accrue(amount, rate);
+        return Rate.accrue(amount, over(irm, duration, util));
     }
 
     /**
@@ -124,8 +121,7 @@ library SupplyRate {
         uint256 duration,
         uint256 util
     ) internal pure returns (uint256 supply_rate) {
-        uint256 rate = by(irm, util);
-        return Rate.over(duration, rate);
+        return Rate.over(duration, by(irm, util));
     }
 
     /**

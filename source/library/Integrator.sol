@@ -112,7 +112,7 @@ library Integrator {
     }
 
     /**
-     * @return area equal to value * (stamp - last.stamp).
+     * @return area equal to value × (stamp - last.stamp).
      */
     function _areaOf(
         uint256 value,
