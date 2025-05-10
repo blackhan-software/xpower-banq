@@ -24,18 +24,18 @@ slither . \
 Impact: High Confidence: High
 
 - [ ] ID-0
-      [Pool._square(address,address,uint8)](source/contract/Pool.sol#L429-L463)
+      [Pool._square(address,address,uint8)](source/contract/Pool.sol#L568-L602)
       uses arbitrary from in transferFrom:
-      [assert(bool)(sp.transferFrom(victim,user,supplied))](source/contract/Pool.sol#L460)
+      [assert(bool)(sp.transferFrom(victim,user,supplied))](source/contract/Pool.sol#L599)
 
-source/contract/Pool.sol#L429-L463
+source/contract/Pool.sol#L568-L602
 
 - [ ] ID-1
-      [Pool._square(address,address,uint8)](source/contract/Pool.sol#L429-L463)
+      [Pool._square(address,address,uint8)](source/contract/Pool.sol#L568-L602)
       uses arbitrary from in transferFrom:
-      [t.safeTransferFrom(user,address(this),borrowed)](source/contract/Pool.sol#L444)
+      [t.safeTransferFrom(user,address(this),borrowed)](source/contract/Pool.sol#L583)
 
-source/contract/Pool.sol#L429-L463
+source/contract/Pool.sol#L568-L602
 
 ## incorrect-equality
 
@@ -161,20 +161,14 @@ source/contract/modifier/Delayed.sol#L46-L55
 
 source/contract/Position.sol#L484-L496
 
-- [ ] ID-18 [Pool._checkHealth(address)](source/contract/Pool.sol#L465-L470)
-      uses timestamp for comparisons Dangerous comparisons:
-  - [h.wnav_supply < h.wnav_borrow](source/contract/Pool.sol#L467)
-
-source/contract/Pool.sol#L465-L470
-
-- [ ] ID-19
+- [ ] ID-18
       [Oracle.refreshed(IERC20,IERC20)](source/contract/Oracle.sol#L215-L222)
       uses timestamp for comparisons Dangerous comparisons:
   - [block.timestamp < twap.last.time + limit](source/contract/Oracle.sol#L221)
 
 source/contract/Oracle.sol#L215-L222
 
-- [ ] ID-20
+- [ ] ID-19
       [Position.cap(uint256,uint256)](source/contract/Position.sol#L94-L122)
       uses timestamp for comparisons Dangerous comparisons:
   - [timestamp == type()(uint256).max](source/contract/Position.sol#L100)
@@ -185,11 +179,17 @@ source/contract/Oracle.sol#L215-L222
 
 source/contract/Position.sol#L94-L122
 
-- [ ] ID-21 [Position.index()](source/contract/Position.sol#L382-L389) uses
+- [ ] ID-20 [Position.index()](source/contract/Position.sol#L382-L389) uses
       timestamp for comparisons Dangerous comparisons:
   - [stamp > _stamp](source/contract/Position.sol#L384)
 
 source/contract/Position.sol#L382-L389
+
+- [ ] ID-21 [Pool._checkHealth(address)](source/contract/Pool.sol#L604-L609)
+      uses timestamp for comparisons Dangerous comparisons:
+  - [h.wnav_supply < h.wnav_borrow](source/contract/Pool.sol#L606)
+
+source/contract/Pool.sol#L604-L609
 
 - [ ] ID-22
       [Parameterized._setTargetIf(uint256,uint256,uint256)](source/contract/governance/Parameterized.sol#L72-L95)
@@ -199,42 +199,34 @@ source/contract/Position.sol#L382-L389
 
 source/contract/governance/Parameterized.sol#L72-L95
 
-- [ ] ID-23
-      [Pool.square(address,address,uint8)](source/contract/Pool.sol#L415-L426)
-      uses timestamp for comparisons Dangerous comparisons:
-  - [h.wnav_supply >= h.wnav_borrow](source/contract/Pool.sol#L421)
-
-source/contract/Pool.sol#L415-L426
-
-- [ ] ID-24 [Position._reindex()](source/contract/Position.sol#L373-L380) uses
+- [ ] ID-23 [Position._reindex()](source/contract/Position.sol#L373-L380) uses
       timestamp for comparisons Dangerous comparisons:
   - [stamp > _stamp](source/contract/Position.sol#L375)
 
 source/contract/Position.sol#L373-L380
 
-- [ ] ID-25
+- [ ] ID-24
       [BorrowPosition._indexOf2(uint256)](source/contract/Position.sol#L596-L608)
       uses timestamp for comparisons Dangerous comparisons:
   - [dt > 0](source/contract/Position.sol#L600)
 
 source/contract/Position.sol#L596-L608
 
-- [ ] ID-26
-      [Position.mint(address,uint256,bool)](source/contract/Position.sol#L218-L236)
+- [ ] ID-25
+      [Pool.square(address,address,uint8)](source/contract/Pool.sol#L554-L565)
       uses timestamp for comparisons Dangerous comparisons:
-  - [amount + totalSupply() > abs_limit](source/contract/Position.sol#L224)
-  - [amount > rel_limit](source/contract/Position.sol#L228)
+  - [h.wnav_supply >= h.wnav_borrow](source/contract/Pool.sol#L560)
 
-source/contract/Position.sol#L218-L236
+source/contract/Pool.sol#L554-L565
 
-- [ ] ID-27
+- [ ] ID-26
       [Parameterized._durationTo(uint256)](source/contract/governance/Parameterized.sol#L112-L117)
       uses timestamp for comparisons Dangerous comparisons:
   - [timestamp > block.timestamp](source/contract/governance/Parameterized.sol#L113)
 
 source/contract/governance/Parameterized.sol#L112-L117
 
-- [ ] ID-28
+- [ ] ID-27
       [RateLimited.ratelimitedOf(bytes32)](source/contract/modifier/RateLimited.sol#L58-L67)
       uses timestamp for comparisons Dangerous comparisons:
   - [_total[key] == 0 && _times[key] > 0](source/contract/modifier/RateLimited.sol#L63)
@@ -242,12 +234,20 @@ source/contract/governance/Parameterized.sol#L112-L117
 
 source/contract/modifier/RateLimited.sol#L58-L67
 
-- [ ] ID-29
+- [ ] ID-28
       [Limited.limitedOf(bytes32)](source/contract/modifier/Limited.sol#L37-L45)
       uses timestamp for comparisons Dangerous comparisons:
   - [_times[key] > yet](source/contract/modifier/Limited.sol#L41)
 
 source/contract/modifier/Limited.sol#L37-L45
+
+- [ ] ID-29
+      [Position.mint(address,uint256,bool)](source/contract/Position.sol#L218-L236)
+      uses timestamp for comparisons Dangerous comparisons:
+  - [amount + totalSupply() > abs_limit](source/contract/Position.sol#L225)
+  - [amount > rel_limit](source/contract/Position.sol#L229)
+
+source/contract/Position.sol#L218-L236
 
 ## function-init-state
 
