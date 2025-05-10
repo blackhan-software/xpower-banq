@@ -539,27 +539,29 @@ contract PoolBorrow_Event is TestBase {
     event Borrow(address indexed, IERC20 indexed, uint256, bool, IFlash, bytes);
 }
 
-contract PoolBorrow_Flash is TestBase {
+contract PoolBorrow_Flash is PoolTest {
+    constructor() PoolTest(TOKENS, VAULT_NIL, IR_MODEL, DELPHI) {}
+
     function setUp() public {
         AVAX.transfer(papa, 100 * AVAX_ONE);
         ///
-        vm.startPrank(papa);
+        vm.prank(papa);
         AVAX.approve(address(pool), 100 * AVAX_ONE);
+        vm.prank(papa);
         pool.supply(AVAX, 100 * AVAX_ONE);
-        vm.stopPrank();
         ///
         Flash flash = new Flash(self, pool);
-        AVAX.approve(address(pool), 99 * AVAX_ONE);
-        pool.borrow(self, AVAX, 99 * AVAX_ONE, false, flash, "0x0");
+        AVAX.approve(address(pool), 100 * AVAX_ONE);
+        pool.borrow(self, AVAX, 100 * AVAX_ONE, false, flash, "0x0");
     }
 
     function test_balance_of_pool() public view {
-        uint256 avax = 100.098901_098901_098903e18;
+        uint256 avax = 100.000000_000000_000000e18;
         assertEq(AVAX.balanceOf(address(vAVAX)), avax);
     }
 
     function test_balance_of_self() public view {
-        uint256 avax = 899.901098_901098_901097e18;
+        uint256 avax = 900.000000_000000_000000e18;
         assertEq(AVAX.balanceOf(self), avax);
     }
 
@@ -592,13 +594,86 @@ contract Flash is IFlash, Test {
         bytes calldata params
     ) external view override returns (bool) {
         assertEq(IERC20Metadata(address(token)).symbol(), "AVAX");
-        assertEq(amount, 98.901098_901098_901097e18);
-        assertEq(premium, 0.098901_098901_098903e18);
+        assertEq(amount, 100.000000_000000_000000e18);
+        assertEq(premium, 0.000000_000000_000000e18);
         assertEq(initiator, user);
         assertEq(params, "0x0");
         ///
         Health memory health = pool.healthOf(initiator);
         assertEq(health.wnav_supply, 0); // *zero* supply
+        assertGt(health.wnav_borrow, 0); // *more* borrow
+        return true;
+    }
+
+    address immutable user;
+    IPool immutable pool;
+}
+
+contract PoolBorrow_Flash_WithFee is PoolTest {
+    constructor() PoolTest(TOKENS, VAULT_FEE, IR_MODEL, DELPHI) {}
+
+    function setUp() public {
+        AVAX.transfer(papa, 100 * AVAX_ONE);
+        ///
+        vm.prank(papa);
+        AVAX.approve(address(pool), 100 * AVAX_ONE);
+        vm.prank(papa);
+        pool.supply(AVAX, 100 * AVAX_ONE);
+        ///
+        AVAX.approve(address(pool), AVAX_ONE);
+        pool.supply(AVAX, AVAX_ONE);
+        ///
+        Flash_WithFee flash = new Flash_WithFee(self, pool);
+        AVAX.approve(address(pool), 100 * AVAX_ONE);
+        pool.borrow(self, AVAX, 100 * AVAX_ONE, false, flash, "0x0");
+    }
+
+    function test_balance_of_pool() public view {
+        uint256 avax = 101.099900_099900_099902e18;
+        assertEq(AVAX.balanceOf(address(vAVAX)), avax);
+    }
+
+    function test_balance_of_self() public view {
+        uint256 avax = 898.900099_900099_900098e18;
+        assertEq(AVAX.balanceOf(self), avax);
+    }
+
+    function test_supply_of_self() public view {
+        assertEq(sAVAX.balanceOf(self), 0.999010_880316_518297e18);
+    }
+
+    function test_borrow_of_self() public view {
+        assertEq(bAVAX.balanceOf(self), 0.001087_922077_823266e18); // vault fee!
+    }
+
+    function test_health_of_self() public view {
+        Health memory health = pool.healthOf(self);
+        assertGt(health.wnav_supply, 0); // *more* supply
+        assertGt(health.wnav_borrow, 0); // *more* borrow (vault fee!)
+    }
+}
+
+contract Flash_WithFee is IFlash, Test {
+    constructor(address user_, IPool pool_) {
+        user = user_;
+        pool = pool_;
+    }
+
+    function loan(
+        IERC20 token,
+        uint256 amount,
+        uint256 premium,
+        address initiator,
+        bytes calldata params
+    ) external view override returns (bool) {
+        assertEq(IERC20Metadata(address(token)).symbol(), "AVAX");
+        assertEq(amount, 99.900099_900099_900098e18);
+        assertEq(premium, 0.099900_099900_099902e18);
+        assertEq(initiator, user);
+        assertEq(params, "0x0");
+        ///
+        Health memory health = pool.healthOf(initiator);
+        assertGt(health.wnav_supply, 0); // *more* supply
         assertGt(health.wnav_borrow, 0); // *more* borrow
         return true;
     }

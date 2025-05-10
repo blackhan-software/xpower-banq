@@ -13,25 +13,29 @@ import {PoolTest} from "./Pool.t.sol";
 
 contract TestBase is PoolTest {
     constructor() PoolTest(TOKENS, VAULT_FEE, IR_MODEL, DELPHI) {}
+
+    function supplyOf(
+        address account,
+        Weight memory weight
+    ) internal view returns (uint256) {
+        return
+            Math.mulDiv(sAVAX.balanceOf(account), weight.supply, weight.borrow);
+    }
+
+    function borrowOf(address account) internal view returns (uint256) {
+        return bAVAX.balanceOf(account);
+    }
+
+    uint256 immutable SUPPLY_AVAX = 100e18;
 }
 
 contract PoolSettle_Only is TestBase {
     function setUp() public {
-        AVAX.approve(address(pool), 100 * ONE);
-        pool.supply(AVAX, 50 * ONE);
-        pool.supply(AVAX, 25 * ONE);
-        pool.supply(AVAX, 25 * ONE);
-        ///
-        Weight memory weight = pool.weightOf(AVAX);
-        uint256 supply = Math.mulDiv(
-            sAVAX.balanceOf(self),
-            weight.supply,
-            weight.borrow
-        );
-        pool.borrow(AVAX, supply);
-        ///
-        _borrow = bAVAX.balanceOf(self);
-        AVAX.approve(address(pool), _borrow);
+        AVAX.approve(address(pool), SUPPLY_AVAX);
+        pool.supply(AVAX, SUPPLY_AVAX);
+        pool.borrow(AVAX, supplyOf(self, pool.weightOf(AVAX)));
+        AVAX.approve(address(pool), borrowOf(self));
+        _borrow = borrowOf(self);
     }
 
     function test_settle_only() public {
@@ -43,79 +47,59 @@ contract PoolSettle_Only is TestBase {
 
 contract PoolSettle_General is TestBase {
     function setUp() public {
-        AVAX.approve(address(pool), 100 * ONE);
-        pool.supply(AVAX, 50 * ONE);
-        pool.supply(AVAX, 25 * ONE);
-        pool.supply(AVAX, 25 * ONE);
-        ///
-        Weight memory weight = pool.weightOf(AVAX);
-        uint256 supply = Math.mulDiv(
-            sAVAX.balanceOf(self),
-            weight.supply,
-            weight.borrow
-        );
-        pool.borrow(AVAX, supply);
-        ///
-        uint256 borrow = bAVAX.balanceOf(self);
-        AVAX.approve(address(pool), borrow);
-        pool.settle(AVAX, borrow);
+        AVAX.approve(address(pool), SUPPLY_AVAX);
+        pool.supply(AVAX, SUPPLY_AVAX);
+        pool.borrow(AVAX, supplyOf(self, pool.weightOf(AVAX)));
+        AVAX.approve(address(pool), borrowOf(self));
+        pool.settle(AVAX, borrowOf(self));
     }
 
     function test_balance_of_vault() public view {
-        uint256 balance = 100.066576_495830_171830e18;
+        uint256 balance = 100.066600_066600_066602e18;
         assertEq(AVAX.balanceOf(address(vAVAX)), balance);
     }
 
     function test_balance_of_pool() public view {
-        uint256 vavax = 99.643015_652806_634019_013436975e27;
+        uint256 vavax = 99.700897_308075_772676_289467591e27;
         assertEq(vAVAX.balanceOf(address(pool)), vavax);
     }
 
     function test_balance_of_self() public view {
-        uint256 balance = 899.933423_504169_828170e18;
+        uint256 balance = 899.933399_933399_933398e18;
         assertEq(AVAX.balanceOf(self), balance);
     }
 
     function test_supply_of_self() public view {
-        uint256 supply = 99.964608_489003_001244e18;
+        uint256 supply = 99.999999_999999_999999e18;
         assertEq(sAVAX.balanceOf(self), supply);
     }
 
     function test_borrow_of_self() public view {
-        assertEq(bAVAX.balanceOf(self), 0);
+        assertEq(bAVAX.balanceOf(self), 0.022244_377888_733534e18);
     }
 
     function test_health_of_self() public view {
-        uint256 supply = 8_496.991721_565255_105740e18;
+        uint256 supply = 8_499.999999_999999_999915e18;
+        uint256 borrow = 2.836158_180813_525585e18;
         Health memory health = pool.healthOf(self);
         assertEq(health.wnav_supply, supply);
-        assertEq(health.wnav_borrow, 0);
+        assertEq(health.wnav_borrow, borrow);
     }
 }
 
 contract PoolSettle_Event is TestBase {
     function setUp() public {
-        AVAX.approve(address(pool), 100 * ONE);
-        pool.supply(AVAX, 50 * ONE);
-        pool.supply(AVAX, 25 * ONE);
-        pool.supply(AVAX, 25 * ONE);
-        ///
-        Weight memory weight = pool.weightOf(AVAX);
-        uint256 supply = Math.mulDiv(
-            sAVAX.balanceOf(self),
-            weight.supply,
-            weight.borrow
-        );
-        pool.borrow(AVAX, supply);
+        AVAX.approve(address(pool), SUPPLY_AVAX);
+        pool.supply(AVAX, SUPPLY_AVAX);
+        pool.borrow(AVAX, supplyOf(self, pool.weightOf(AVAX)));
     }
 
     function test_settle() public {
-        uint256 borrow = bAVAX.balanceOf(self);
-        AVAX.approve(address(pool), borrow);
+        AVAX.approve(address(pool), borrowOf(self));
         vm.expectEmit();
-        emit Settle(self, AVAX, borrow);
-        uint256 amount = pool.settle(AVAX, borrow);
-        assertEq(amount, 66.620820_128142_077869e18);
+        emit Settle(self, AVAX, borrowOf(self));
+        uint256 assets = pool.settle(AVAX, borrowOf(self));
+        assertEq(assets, 66.644422_288777_933132e18);
     }
 
     event Settle(address indexed, IERC20 indexed, uint256);

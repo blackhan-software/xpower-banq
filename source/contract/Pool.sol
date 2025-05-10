@@ -427,10 +427,9 @@ contract Pool is
         uint256 shares = vault.convertToShares(assets);
         amount = vault.redeem(shares, user, address(this));
         // flash-loan:
-        if (address(flash) != address(0)) {
-            uint256 fee = assets - amount; // assets >= amount
-            assert(flash.loan(token, amount, fee, user, data));
-            _settle(user, token, assets);
+        if (address(flash) != address(0) && assets >= amount) {
+            assert(flash.loan(token, amount, assets - amount, user, data));
+            _settle(user, token, assets); // assets - amount = fee
         }
         require(amount > 0, EmptyBorrow(user, token, assets, lock));
     }
@@ -510,7 +509,7 @@ contract Pool is
         uint256 shares = vault.deposit(amount, address(this));
         assets = vault.convertToAssets(shares);
         // borrow: user => zero w/o unlock
-        vault.borrow().burn(user, amount, false);
+        vault.borrow().burn(user, assets, false);
         require(assets > 0, EmptySettle(user, token, amount));
     }
 
