@@ -220,18 +220,18 @@ abstract contract Position is
         uint256 amount,
         bool lock
     ) public virtual onlyOwner {
+        _accrueInterest(user); // *before* caps!
         (uint256 abs_limit, ) = _absLimit();
         if (amount + totalSupply() > abs_limit) {
-            revert AbsExceeded(abs_limit);
+            revert AbsoluteCapExceeded(abs_limit);
         }
         (uint256 rel_limit, ) = _capOf(user);
         if (amount > rel_limit) {
-            revert RelExceeded(rel_limit);
+            revert RelativeCapExceeded(rel_limit);
         }
         if (lock) {
             _lockMore(user, amount);
         }
-        _accrueInterest(user);
         _mint(user, amount);
     }
 

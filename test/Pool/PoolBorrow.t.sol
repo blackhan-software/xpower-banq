@@ -408,8 +408,8 @@ contract PoolBorrow_Capped is TestBase {
         pool.borrow(AVAX, 1 * ONE);
     }
 
-    bytes4 immutable ABS_EXCEEDED = IPosition.AbsExceeded.selector;
-    bytes4 immutable REL_EXCEEDED = IPosition.RelExceeded.selector;
+    bytes4 immutable ABS_EXCEEDED = IPosition.AbsoluteCapExceeded.selector;
+    bytes4 immutable REL_EXCEEDED = IPosition.RelativeCapExceeded.selector;
 }
 
 contract PoolBorrow_Limited is TestBase {

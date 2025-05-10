@@ -6,7 +6,7 @@ import {SupplyPosition} from "../../source/contract/Position.sol";
 import {IPosition} from "../../source/interface/Position.sol";
 import {BaseTest} from "./Base.t.sol";
 
-contract Supply_RelExceeded is BaseTest {
+contract Supply_RelativeCapExceeded is BaseTest {
     constructor() BaseTest(VAULT_NIL, IR_MODEL) {}
 
     function setUp() public {
@@ -22,7 +22,7 @@ contract Supply_RelExceeded is BaseTest {
         supply.mint(self, 1, false);
     }
 
-    bytes4 immutable ABS_EXCEEDED = IPosition.AbsExceeded.selector;
+    bytes4 immutable ABS_EXCEEDED = IPosition.AbsoluteCapExceeded.selector;
 }
 
 contract Base is BaseTest {

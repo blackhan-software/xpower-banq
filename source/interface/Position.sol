@@ -135,9 +135,9 @@ interface IPosition is
     /** Thrown on constant cap. */
     error CapConstant(uint256 limit, uint256 duration);
     /** Thrown on exceeded cap (absolute). */
-    error AbsExceeded(uint256 limit);
+    error AbsoluteCapExceeded(uint256 limit);
     /** Thrown on exceeded cap (relative). */
-    error RelExceeded(uint256 limit);
+    error RelativeCapExceeded(uint256 limit);
     /** Thrown on forbidden transfer. */
     error ForbiddenTransfer(address from, address to);
     /** Thrown on insufficient health. */

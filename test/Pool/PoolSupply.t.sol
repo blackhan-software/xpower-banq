@@ -282,8 +282,8 @@ contract PoolSupply_Capped is TestBase {
         pool.supply(AVAX, 74 * ONE);
     }
 
-    bytes4 immutable ABS_EXCEEDED = IPosition.AbsExceeded.selector;
-    bytes4 immutable REL_EXCEEDED = IPosition.RelExceeded.selector;
+    bytes4 immutable ABS_EXCEEDED = IPosition.AbsoluteCapExceeded.selector;
+    bytes4 immutable REL_EXCEEDED = IPosition.RelativeCapExceeded.selector;
 }
 
 contract PoolSupply_Limited is TestBase {
