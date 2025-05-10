@@ -197,10 +197,19 @@ contract Pool is
         IERC20 token,
         uint256 amount
     ) external override returns (uint256 assets) {
-        assets = supply(token, amount, false);
+        assets = supply(msg.sender, token, amount, false);
     }
 
     function supply(
+        IERC20 token,
+        uint256 amount,
+        bool lock
+    ) external override returns (uint256 assets) {
+        assets = supply(msg.sender, token, amount, lock);
+    }
+
+    function supply(
+        address user,
         IERC20 token,
         uint256 amount,
         bool lock
@@ -211,31 +220,18 @@ contract Pool is
         ratelimited(
             parameterOf(MAX_SUPPLY_ID(token)),
             parameterOf(MIN_SUPPLY_ID(token)),
-            keccak256(abi.encodePacked(bytes4(0x7cf51195), tx.origin, token))
+            keccak256(abi.encodePacked(bytes4(0x3e6f66dc), user, token))
         )
         powlimited(supplyDifficultyOf(token, amount))
         returns (uint256 assets)
     {
+        require(
+            user == msg.sender || approvedSupply(user, msg.sender, token),
+            IAccessManaged.AccessManagedUnauthorized(msg.sender)
+        );
         require(enlisted(token), NotEnlisted(token));
-        assets = _supply(msg.sender, token, amount, lock);
-        emit Supply(msg.sender, token, amount, lock);
-    }
-
-    function supplyDifficultyOf(
-        IERC20 token,
-        uint256 amount
-    ) public view override returns (uint256) {
-        uint256 difficulty = parameterOf(POW_SUPPLY_ID(token));
-        uint256 decimals = Token.decimalsOf(token);
-        if (amount < 10 ** decimals) {
-            uint256 log10 = Math.log10(amount);
-            if (decimals > log10) {
-                unchecked {
-                    difficulty += decimals - log10;
-                }
-            }
-        }
-        return difficulty;
+        assets = _supply(user, token, amount, lock);
+        emit Supply(user, token, amount, lock);
     }
 
     function _supply(
@@ -255,6 +251,44 @@ contract Pool is
         require(assets > 0, EmptySupply(user, token, amount, lock));
     }
 
+    function supplyDifficultyOf(
+        IERC20 token,
+        uint256 amount
+    ) public view override returns (uint256) {
+        uint256 difficulty = parameterOf(POW_SUPPLY_ID(token));
+        uint256 decimals = Token.decimalsOf(token);
+        if (amount < 10 ** decimals) {
+            uint256 log10 = Math.log10(amount);
+            if (decimals > log10) {
+                unchecked {
+                    difficulty += decimals - log10;
+                }
+            }
+        }
+        return difficulty;
+    }
+
+    function approveSupply(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external override {
+        require(msg.sender != operator, SelfApproving(operator));
+        _supplyApprovals[msg.sender][operator][token] = approved;
+        emit ApproveSupply(msg.sender, operator, token, approved);
+    }
+
+    function approvedSupply(
+        address user,
+        address operator,
+        IERC20 token
+    ) public view returns (bool) {
+        return _supplyApprovals[user][operator][token];
+    }
+
+    mapping(address => mapping(address => mapping(IERC20 => bool)))
+        private _supplyApprovals;
+
     // ////////////////////////////////////////////////////////////////
     // IPoolRW: redeem
     // ////////////////////////////////////////////////////////////////
@@ -262,11 +296,23 @@ contract Pool is
     function redeem(
         IERC20 token,
         uint256 assets
-    ) external override nonReentrant returns (uint256 amount) {
+    ) external override returns (uint256 amount) {
+        amount = redeem(msg.sender, token, assets);
+    }
+
+    function redeem(
+        address user,
+        IERC20 token,
+        uint256 assets
+    ) public override nonReentrant returns (uint256 amount) {
+        require(
+            user == msg.sender || approvedRedeem(user, msg.sender, token),
+            IAccessManaged.AccessManagedUnauthorized(msg.sender)
+        );
         require(enlisted(token), NotEnlisted(token));
-        amount = _redeem(msg.sender, token, assets);
-        _checkHealth(msg.sender);
-        emit Redeem(msg.sender, token, assets);
+        amount = _redeem(user, token, assets);
+        _checkHealth(user);
+        emit Redeem(user, token, assets);
     }
 
     function _redeem(
@@ -283,6 +329,27 @@ contract Pool is
         require(amount > 0, EmptyRedeem(user, token, assets));
     }
 
+    function approveRedeem(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external override {
+        require(msg.sender != operator, SelfApproving(operator));
+        _redeemApprovals[msg.sender][operator][token] = approved;
+        emit ApproveRedeem(msg.sender, operator, token, approved);
+    }
+
+    function approvedRedeem(
+        address user,
+        address operator,
+        IERC20 token
+    ) public view returns (bool) {
+        return _redeemApprovals[user][operator][token];
+    }
+
+    mapping(address => mapping(address => mapping(IERC20 => bool)))
+        private _redeemApprovals;
+
     // ////////////////////////////////////////////////////////////////
     // IPoolRW, IFlashPoolRW: borrow
     // ////////////////////////////////////////////////////////////////
@@ -291,7 +358,14 @@ contract Pool is
         IERC20 token,
         uint256 assets
     ) external override returns (uint256 amount) {
-        amount = borrow(token, assets, false, IFlash(address(0)), "");
+        amount = borrow(
+            msg.sender,
+            token,
+            assets,
+            false,
+            IFlash(address(0)),
+            ""
+        );
     }
 
     function borrow(
@@ -299,10 +373,18 @@ contract Pool is
         uint256 assets,
         bool lock
     ) external override returns (uint256 amount) {
-        amount = borrow(token, assets, lock, IFlash(address(0)), "");
+        amount = borrow(
+            msg.sender,
+            token,
+            assets,
+            lock,
+            IFlash(address(0)),
+            ""
+        );
     }
 
     function borrow(
+        address user,
         IERC20 token,
         uint256 assets,
         bool lock,
@@ -315,32 +397,19 @@ contract Pool is
         ratelimited(
             parameterOf(MAX_BORROW_ID(token)),
             parameterOf(MIN_BORROW_ID(token)),
-            keccak256(abi.encodePacked(bytes4(0x696a1504), tx.origin, token))
+            keccak256(abi.encodePacked(bytes4(0xd0573eb2), user, token))
         )
         powlimited(borrowDifficultyOf(token, assets))
         returns (uint256 amount)
     {
+        require(
+            user == msg.sender || approvedBorrow(user, msg.sender, token),
+            IAccessManaged.AccessManagedUnauthorized(msg.sender)
+        );
         require(enlisted(token), NotEnlisted(token));
-        amount = _borrow(msg.sender, token, assets, lock, flash, data);
-        _checkHealth(msg.sender);
-        emit Borrow(msg.sender, token, assets, lock, flash, data);
-    }
-
-    function borrowDifficultyOf(
-        IERC20 token,
-        uint256 amount
-    ) public view override returns (uint256) {
-        uint256 difficulty = parameterOf(POW_BORROW_ID(token));
-        uint256 decimals = Token.decimalsOf(token);
-        if (amount < 10 ** decimals) {
-            uint256 log10 = Math.log10(amount);
-            if (decimals > log10) {
-                unchecked {
-                    difficulty += decimals - log10;
-                }
-            }
-        }
-        return difficulty;
+        amount = _borrow(user, token, assets, lock, flash, data);
+        _checkHealth(user);
+        emit Borrow(user, token, assets, lock, flash, data);
     }
 
     function _borrow(
@@ -366,6 +435,44 @@ contract Pool is
         require(amount > 0, EmptyBorrow(user, token, assets, lock));
     }
 
+    function borrowDifficultyOf(
+        IERC20 token,
+        uint256 amount
+    ) public view override returns (uint256) {
+        uint256 difficulty = parameterOf(POW_BORROW_ID(token));
+        uint256 decimals = Token.decimalsOf(token);
+        if (amount < 10 ** decimals) {
+            uint256 log10 = Math.log10(amount);
+            if (decimals > log10) {
+                unchecked {
+                    difficulty += decimals - log10;
+                }
+            }
+        }
+        return difficulty;
+    }
+
+    function approveBorrow(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external override {
+        require(msg.sender != operator, SelfApproving(operator));
+        _borrowApprovals[msg.sender][operator][token] = approved;
+        emit ApproveBorrow(msg.sender, operator, token, approved);
+    }
+
+    function approvedBorrow(
+        address user,
+        address operator,
+        IERC20 token
+    ) public view returns (bool) {
+        return _borrowApprovals[user][operator][token];
+    }
+
+    mapping(address => mapping(address => mapping(IERC20 => bool)))
+        private _borrowApprovals;
+
     // ////////////////////////////////////////////////////////////////
     // IPoolRW: settle
     // ////////////////////////////////////////////////////////////////
@@ -373,10 +480,22 @@ contract Pool is
     function settle(
         IERC20 token,
         uint256 amount
-    ) external override nonReentrant returns (uint256 assets) {
+    ) external override returns (uint256 assets) {
+        assets = settle(msg.sender, token, amount);
+    }
+
+    function settle(
+        address user,
+        IERC20 token,
+        uint256 amount
+    ) public override nonReentrant returns (uint256 assets) {
+        require(
+            user == msg.sender || approvedSettle(user, msg.sender, token),
+            IAccessManaged.AccessManagedUnauthorized(msg.sender)
+        );
         require(enlisted(token), NotEnlisted(token));
-        assets = _settle(msg.sender, token, amount);
-        emit Settle(msg.sender, token, amount);
+        assets = _settle(user, token, amount);
+        emit Settle(user, token, amount);
     }
 
     function _settle(
@@ -394,6 +513,27 @@ contract Pool is
         vault.borrow().burn(user, amount, false);
         require(assets > 0, EmptySettle(user, token, amount));
     }
+
+    function approveSettle(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external override {
+        require(msg.sender != operator, SelfApproving(operator));
+        _settleApprovals[msg.sender][operator][token] = approved;
+        emit ApproveSettle(msg.sender, operator, token, approved);
+    }
+
+    function approvedSettle(
+        address user,
+        address operator,
+        IERC20 token
+    ) public view returns (bool) {
+        return _settleApprovals[user][operator][token];
+    }
+
+    mapping(address => mapping(address => mapping(IERC20 => bool)))
+        private _settleApprovals;
 
     // ////////////////////////////////////////////////////////////////
     // IPoolRW: liquidate
@@ -428,7 +568,7 @@ contract Pool is
     // slither-disable-next-line reentrancy-no-eth
     function _square(address user, address victim, uint8 partial_exp) private {
         require(
-            msg.sender == user || msg.sender == address(this),
+            user == msg.sender || address(this) == msg.sender,
             IAccessManaged.AccessManagedUnauthorized(msg.sender)
         );
         for (uint256 i = 0; i < _tokens.length; i++) {

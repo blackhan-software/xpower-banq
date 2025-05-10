@@ -190,12 +190,40 @@ interface IPoolRW {
     ) external returns (uint256 assets);
 
     /**
+     * Supplies tokens into the pool; with lock.
+     *
+     * @param user to supply for
+     * @param token to supply
+     * @param amount to supply
+     * @param lock flag
+     */
+    function supply(
+        address user,
+        IERC20 token,
+        uint256 amount,
+        bool lock
+    ) external returns (uint256 assets);
+
+    /**
      * Redeems tokens from the pool.
      *
      * @param token to redeem
      * @param amount to redeem
      */
     function redeem(
+        IERC20 token,
+        uint256 assets
+    ) external returns (uint256 amount);
+
+    /**
+     * Redeems tokens from the pool.
+     *
+     * @param user to redeem for
+     * @param token to redeem
+     * @param amount to redeem
+     */
+    function redeem(
+        address user,
         IERC20 token,
         uint256 assets
     ) external returns (uint256 amount);
@@ -227,6 +255,7 @@ interface IPoolRW {
     /**
      * Borrows tokens from the pool; with lock and flash-loan.
      *
+     * @param user to borrow for
      * @param token to borrow
      * @param amount to borrow
      * @param lock flag
@@ -234,6 +263,7 @@ interface IPoolRW {
      * @param data to forward
      */
     function borrow(
+        address user,
         IERC20 token,
         uint256 assets,
         bool lock,
@@ -248,6 +278,19 @@ interface IPoolRW {
      * @param amount to settle
      */
     function settle(
+        IERC20 token,
+        uint256 assets
+    ) external returns (uint256 amount);
+
+    /**
+     * Settles tokens into the pool.
+     *
+     * @param user to settle for
+     * @param token to settle
+     * @param amount to settle
+     */
+    function settle(
+        address user,
         IERC20 token,
         uint256 assets
     ) external returns (uint256 amount);
@@ -389,7 +432,181 @@ interface IPoolRO {
     function wrapperOf(IERC20 token) external view returns (IWPosition);
 }
 
-interface IPool is ISupervisedPool, IPoolRW, IPoolRO {
+interface IPoolApproval {
+    /**
+     * Emitted when the `account` grants or revokes permission
+     * to `operator` to supply token according to `approved`.
+     *
+     * @param user granting or revoking
+     * @param operator to supply with
+     * @param token to supply
+     * @param approved flag
+     */
+    event ApproveSupply(
+        address indexed user,
+        address indexed operator,
+        IERC20 indexed token,
+        bool approved
+    );
+    /**
+     * Emitted when the `user` grants or revokes permission
+     * to `operator` to redeem token according to `approved`.
+     *
+     * @param user granting or revoking
+     * @param operator to redeem with
+     * @param token to redeem
+     * @param approved flag
+     */
+    event ApproveRedeem(
+        address indexed user,
+        address indexed operator,
+        IERC20 indexed token,
+        bool approved
+    );
+    /**
+     * Emitted when the `user` grants or revokes permission
+     * to `user` to borrow token according to `approved`.
+     *
+     * @param user granting or revoking
+     * @param operator to borrow with
+     * @param token to borrow
+     * @param approved flag
+     */
+    event ApproveBorrow(
+        address indexed user,
+        address indexed operator,
+        IERC20 indexed token,
+        bool approved
+    );
+    /**
+     * Emitted when the `user` grants or revokes permission
+     * to `operator` to settle token according to `approved`.
+     *
+     * @param user granting or revoking
+     * @param operator to settle with
+     * @param token to settle
+     * @param approved flag
+     */
+    event ApproveSettle(
+        address indexed user,
+        address indexed operator,
+        IERC20 indexed token,
+        bool approved
+    );
+
+    /**
+     * Approves or revokes the operator to supply token.
+     *
+     * @param operator to supply with
+     * @param token to approve for
+     * @param approved flag
+     */
+    function approveSupply(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external;
+
+    /**
+     * Approves or revokes the operator to redeem token.
+     *
+     * @param operator to redeem with
+     * @param token to approve for
+     * @param approved flag
+     */
+    function approveRedeem(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external;
+
+    /**
+     * Approves or revokes the operator to borrow token.
+     *
+     * @param operator to borrow with
+     * @param token to approve for
+     * @param approved flag
+     */
+    function approveBorrow(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external;
+
+    /**
+     * Approves or revokes the operator to settle token.
+     *
+     * @param operator to settle with
+     * @param token to approve for
+     * @param approved flag
+     */
+    function approveSettle(
+        address operator,
+        IERC20 token,
+        bool approved
+    ) external;
+
+    /**
+     * Gets whether the operator to supply token is approved.
+     *
+     * @param user of approval
+     * @param operator approved
+     * @param token approved for
+     * @return flag of approval
+     */
+    function approvedSupply(
+        address user,
+        address operator,
+        IERC20 token
+    ) external view returns (bool);
+
+    /**
+     * Gets whether the operator to redeem token is approved.
+     *
+     * @param user of approval
+     * @param operator approved
+     * @param token approved for
+     * @return flag of approval
+     */
+    function approvedRedeem(
+        address user,
+        address operator,
+        IERC20 token
+    ) external view returns (bool);
+
+    /**
+     * Gets whether the operator to borrow token is approved.
+     *
+     * @param user of approval
+     * @param operator approved
+     * @param token approved for
+     * @return flag of approval
+     */
+    function approvedBorrow(
+        address user,
+        address operator,
+        IERC20 token
+    ) external view returns (bool);
+
+    /**
+     * Gets whether the operator to settle token is approved.
+     *
+     * @param user of approval
+     * @param operator approved
+     * @param token approved for
+     * @return flag of approval
+     */
+    function approvedSettle(
+        address user,
+        address operator,
+        IERC20 token
+    ) external view returns (bool);
+
+    /** Thrown on self-approving operator. */
+    error SelfApproving(address operator);
+}
+
+interface IPool is ISupervisedPool, IPoolApproval, IPoolRW, IPoolRO {
     /**
      * Emitted on supply.
      *

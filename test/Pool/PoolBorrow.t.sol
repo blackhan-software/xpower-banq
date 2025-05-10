@@ -441,25 +441,25 @@ contract PoolBorrow_Limited is TestBase {
     }
 
     function test_borrow5_7x() public {
-        pool.borrow(AVAX, ONE, false, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE, true, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE, false, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE, true, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE, false, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE, true, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE, false, IFlash(address(0)), "");
+        pool.borrow(AVAX, ONE, false);
+        pool.borrow(AVAX, ONE, true);
+        pool.borrow(AVAX, ONE, false);
+        pool.borrow(AVAX, ONE, true);
+        pool.borrow(AVAX, ONE, false);
+        pool.borrow(AVAX, ONE, true);
+        pool.borrow(AVAX, ONE, false);
     }
 
     function test_borrow5_8x() public {
-        pool.borrow(AVAX, ONE + 1, false, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE + 2, true, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE + 3, false, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE + 4, true, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE + 5, false, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE + 6, true, IFlash(address(0)), "");
-        pool.borrow(AVAX, ONE + 7, false, IFlash(address(0)), "");
+        pool.borrow(AVAX, ONE + 1, false);
+        pool.borrow(AVAX, ONE + 2, true);
+        pool.borrow(AVAX, ONE + 3, false);
+        pool.borrow(AVAX, ONE + 4, true);
+        pool.borrow(AVAX, ONE + 5, false);
+        pool.borrow(AVAX, ONE + 6, true);
+        pool.borrow(AVAX, ONE + 7, false);
         vm.expectPartialRevert(IRateLimited.RateLimited.selector);
-        pool.borrow(AVAX, ONE + 8, true, IFlash(address(0)), "");
+        pool.borrow(AVAX, ONE + 8, true);
     }
 
     error Limited(bytes32 key, uint256 duration);
@@ -550,7 +550,7 @@ contract PoolBorrow_Flash is TestBase {
         ///
         Flash flash = new Flash(self, pool);
         AVAX.approve(address(pool), 99 * AVAX_ONE);
-        pool.borrow(AVAX, 99 * AVAX_ONE, false, flash, "0x0");
+        pool.borrow(self, AVAX, 99 * AVAX_ONE, false, flash, "0x0");
     }
 
     function test_balance_of_pool() public view {
